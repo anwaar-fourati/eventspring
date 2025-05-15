@@ -13,10 +13,9 @@ import java.util.Date;
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
-
-    // Clé secrète encodée en Base64 (minimum 256 bits)
-    private final String jwtSecret = "455D14DB95B7F7CAF5C2D6AC7D57A";
-    private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    
+    // Clé sécurisée générée automatiquement (256 bits minimum)
+    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final int jwtExpirationMs = 86400000; // 24h
 
     public String generateToken(UserDetails userDetails) {
