@@ -5,6 +5,7 @@ import java.util.List;
 @Entity
 @Table(name = "utilisateurs")
 public class Utilisateur {
+	public enum Role { ADMIN, ORGANISATEUR, UTILISATEUR }
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,6 +20,10 @@ public class Utilisateur {
     private String motDePasse;
 
     private String telephone;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.UTILISATEUR;
 
     @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL)
     private List<Evenement> evenementsOrganises;
@@ -80,6 +85,19 @@ public class Utilisateur {
 
 	public void setReservations(List<Reservation> reservations) {
 		this.reservations = reservations;
+	}
+	
+	public boolean isAdmin() {
+        return this.role == Role.ADMIN;
+    }
+
+    public boolean isOrganisateur() {
+        return this.role == Role.ORGANISATEUR;
+    }
+
+	public Object getRole() {
+		// TODO Auto-generated method stub
+		return null;
 	}
     
 }

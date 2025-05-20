@@ -1,16 +1,22 @@
 package com.example.eventreservation.controller;
 
 import com.example.eventreservation.config.JwtService;
+import com.example.eventreservation.dto.AuthRequest;
 import com.example.eventreservation.model.Utilisateur;
 import com.example.eventreservation.service.UtilisateurService;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+
 public class AuthController {
 
     private final UtilisateurService utilisateurService;
@@ -26,25 +32,31 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping("/inscription")
-    public ResponseEntity<Utilisateur> inscrireUtilisateur(@RequestBody Utilisateur utilisateur) {
-        Utilisateur nouvelUtilisateur = utilisateurService.inscrireUtilisateur(utilisateur);
-        return ResponseEntity.ok(nouvelUtilisateur);
-    }
-
     @PostMapping("/connexion")
-    public ResponseEntity<String> connecterUtilisateur(
-            @RequestParam String email,
-            @RequestParam String motDePasse) {
-        
+    public ResponseEntity<String> authenticate(@RequestBody AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, motDePasse)
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getMotDePasse()
+                )
         );
         
         if (authentication.isAuthenticated()) {
-            return ResponseEntity.ok(jwtService.generateToken(utilisateurService.loadUserByUsername(email)));
+            UserDetails userDetails = utilisateurService.loadUserByUsername(request.getEmail());
+            String token = jwtService.generateToken(userDetails);
+            return ResponseEntity.ok(token);
         }
         
         return ResponseEntity.status(401).body("Authentification échouée");
+    }
+    
+    @PostMapping("/inscription")
+    public ResponseEntity<?> inscrireUtilisateur(@RequestBody Utilisateur utilisateur) {
+        try {
+            Utilisateur nouvelUtilisateur = utilisateurService.inscrireUtilisateur(utilisateur);
+            return ResponseEntity.ok(nouvelUtilisateur);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

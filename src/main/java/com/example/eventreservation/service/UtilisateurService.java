@@ -35,7 +35,7 @@ public class UtilisateurService implements UserDetailsService {
         return User.builder()
                 .username(utilisateur.getEmail())
                 .password(utilisateur.getMotDePasse())
-                .roles("USER") // Vous pouvez personnaliser les rôles
+                .roles(utilisateur.getRole().name()) // Vous pouvez personnaliser les rôles
                 .build();
     }
 
